@@ -1,0 +1,73 @@
+name: Build & Publish Native Shell
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        required: true
+        type: choice
+        description: Select platform
+        options:
+          - ios
+          - android
+          - all
+      reason:
+        required: true
+        description: Reason for new shell?
+        type: string
+
+jobs:
+  native-shell:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Set TARGET_ENVIRONMENT variable
+        run: |
+          if [[ ${{ github.ref }} == 'refs/heads/test' ]]
+          then
+            echo "TARGET_ENVIRONMENT=test" >> $GITHUB_ENV
+          elif [[ ${{ github.ref }} == 'refs/heads/main' ]]
+          then
+            echo "TARGET_ENVIRONMENT=production" >> $GITHUB_ENV
+          else
+            echo "TARGET_ENVIRONMENT=development" >> $GITHUB_ENV
+          fi
+
+      - name: Set GIT_COMMIT_SHA variable
+        run: echo "GIT_COMMIT_SHA=$(echo $GITHUB_SHA | cut -c 1-7)" >> $GITHUB_ENV
+
+      - name: Print Input variables
+        run: |
+          echo "Platform:  ${{ github.event.inputs.platform }}"
+          echo "Env: $TARGET_ENVIRONMENT"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - uses: c-hive/gha-yarn-cache@v2
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+      - name: Run tests
+        run: |
+          yarn jest --ci
+      - uses: expo/expo-github-action@v6
+        with:
+          expo-version: 4.x
+          expo-cache: true
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      ### This set some secrets although the values are not necessarily secret,
+      ### but is currently the only way of passing dynamic variables when using eas build
+      - run: eas secret:create --scope=project --name=BUILD_NUMBER --value=${{ github.RUN_NUMBER }} --force
+      - run: eas secret:create --scope=project --name=GIT_COMMIT_SHA --value=$GIT_COMMIT_SHA --force
+
+      - name: Build without deploy
+        if: ${{ env.TARGET_ENVIRONMENT == 'development' }}
+        run: eas build --profile $TARGET_ENVIRONMENT --platform ${{ github.event.inputs.platform }} --non-interactive --no-wait
+      - name: Build with deploy
+        if: ${{ env.TARGET_ENVIRONMENT != 'development' }}
+        run: eas build --profile $TARGET_ENVIRONMENT --platform ${{ github.event.inputs.platform }} --auto-submit --non-interactive --no-wait

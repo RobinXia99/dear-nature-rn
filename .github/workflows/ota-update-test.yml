@@ -1,0 +1,15 @@
+name: OTA-Test - trigger OTA-update-workflow with target environment 'test'
+
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  call-workflow-passing-data:
+    uses: hackberrybay/hackberry-expo/.github/workflows/ota-update.yml@test
+    with:
+      target_environment: test
+      api_host: https://playground.devskills.co/
+    secrets:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

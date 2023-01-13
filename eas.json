@@ -1,0 +1,56 @@
+{
+  "cli": {
+    "version": ">= 0.34.1"
+  },
+  "build": {
+    "production": {
+      "node": "14.18.0",
+      "releaseChannel": "production",
+      "env": {
+        "EXPO_BUILD_ENV": "production",
+        "API_HOST": "https://playground.devskills.co/"
+      }
+    },
+    "test": {
+      "node": "14.18.0",
+      "releaseChannel": "test",
+      "env": {
+        "EXPO_BUILD_ENV": "test",
+        "API_HOST": "https://playground.devskills.co/"
+      }
+    },
+    "development": {
+      "node": "14.18.0",
+      "distribution": "internal",
+      "developmentClient": true,
+      "env": {
+        "EXPO_BUILD_ENV": "dev",
+        "API_HOST": "https://playground.devskills.co/"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "completed"
+      },
+      "ios": {
+        "appleId": "appdistribution@hackberry.se",
+        "ascAppId": "1620853041",
+        "appleTeamId": "7V7B8UK34J"
+      }
+    },
+    "test": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "completed"
+      },
+      "ios": {
+        "appleId": "appdistribution@hackberry.se",
+        "ascAppId": "1599243314",
+        "appleTeamId": "7V7B8UK34J"
+      }
+    }
+  }
+}
